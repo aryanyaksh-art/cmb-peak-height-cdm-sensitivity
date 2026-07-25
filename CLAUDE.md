@@ -6,9 +6,6 @@ acoustic peak-height asymmetry using the CLASS Boltzmann code (via the `classy` 
 wrapper), then running a sensitivity study on the cold dark matter density and overlaying
 real Planck 2018 data. Full technical reference: see `RESEARCH_BLUEPRINT.md` in this repo.
 
-Intended outcome: something I can show on LinkedIn and reference when cold-emailing
-astrophysics professors for research opportunities and referrals.
-
 ## Honesty rule (non-negotiable)
 This reproduces a known textbook result. It is NOT novel research and NOT a parameter
 measurement. Never write code comments, README text, or commit messages that overclaim
