@@ -134,7 +134,7 @@ def plot_paired_sweeps(
     fig, axes = plt.subplots(1, 2, figsize=(13, 5), sharey=True)
     titles = [
         r"Fixed $h$ — positions and amplitudes both move",
-        r"Fixed $100\theta_s$ — positions locked, amplitude isolated",
+        r"Fixed $100\theta_s$ — positions locked to ~2%, amplitude isolated",
     ]
 
     for ax, res, title in zip(axes, (res_fixed_h, res_fixed_theta), titles):

@@ -79,10 +79,17 @@ widened bound is now in place for anyone who reruns with a lower ω_cdm floor).
 | z_eq range | ≈1750 → 5400 | 1731 → 5315 ✅ |
 | D1/D2 trend | rises with ω_cdm | **falls**, 2.31 → 2.17 ❌ opposite sign |
 | D3/D2 trend | sign open | rises, 0.755 → 1.157 (matches Hu's framing) |
-| ℓ₁ spread, fixed θ_s | <~2 | 10.0 (still ~3× tighter than fixed h) |
-| ℓ₁ spread, fixed h | tens of ℓ | 28.2 ✅ |
+| ℓ spread (1st/2nd/3rd peak), fixed θ_s | <~2 (absolute ℓ) | 10.0 / 10.0 / 16.1 — i.e. 4.5% / 1.85% / 2.0% of position |
+| ℓ spread (1st/2nd/3rd peak), fixed h | tens of ℓ | 28.2 / 84.0 / 159.2 — i.e. 12.8% / 15.6% / 19.7% of position ✅ |
 | h, fixed θ_s | rising, 0.55 → 0.78 | **falling**, 1.085 → 0.469 ❌ opposite sign |
 | Peaks found | 3 everywhere | ✅ 16/16, no NaN |
+
+The fixed-θ_s ℓ-spread isn't a miss either — "10.0 absolute ℓ" only looks like
+it blows past the spec's "<~2" bar because absolute ℓ is the wrong metric for
+a comparison across peaks at very different ℓ. As a fraction of peak position
+it's 4.5% at peak 1 and under 2% at peaks 2 and 3, against 12.8–19.7% for
+fixed h — a ~6–9× improvement, which is the actual claim this check exists to
+support.
 
 **Two sign flips from the spec's predictions, not bugs.** Both are reproducible
 across coarse (n=4) and full (n=16) grids, consistent with the Stage 1
@@ -90,20 +97,24 @@ baseline value at ω_cdm=0.12, and visually confirmed in
 `figures/03_fixed_h_vs_fixed_theta.png` (peak 1 visibly shrinks and peak 3
 visibly grows as ω_cdm rises, in both modes).
 
-- **h falls, not rises, in fixed_theta_s mode.** This matches the standard
-  Ω_m–H0 anti-correlation from real Planck posteriors: holding the acoustic
-  scale fixed while raising ω_cdm (at fixed ω_b) forces Ω_Λ down, and H0 has
-  to drop to keep θ_s pinned. The spec's "needs a larger H0" intuition only
-  tracked the extra matter in the numerator of Ω_m and missed the h² in the
-  denominator of the distance calculation.
-- **D1/D2 falls, not rises.** The spec's radiation-driving argument assumed
-  baryon loading pushes the same direction, via "suppressed driving unmasks
-  the loading modulation." That's true for a fixed baryon-to-CDM ratio, but
-  this sweep holds ω_b fixed while ω_cdm rises, so the baryon fraction
-  f_b = ω_b/(ω_b+ω_cdm) is being *diluted* as ω_cdm grows. The shrinking
-  baryon-loading amplitude apparently outweighs the radiation-driving push
-  over this range, the same kind of two-competing-effects situation the spec
-  flagged for D3/D2.
+- **h falls, not rises, in fixed_theta_s mode — and quantitatively, not just
+  in sign.** Holding θ_s fixed gives h ∝ ω_m^(−3/4), since r_s ∝ ω_m^(−0.25)
+  and D_A ∝ h^(−0.2) ω_m^(−0.4). Over the grid ω_m rises 3.07×, predicting an
+  h ratio of 3.07^(−0.75) = 0.429; measured 0.469/1.085 = 0.432. Note that
+  h = 1.085 means H₀ = 108.5 — the low-ω_cdm end of the grid is deliberately
+  unphysical, chosen to expose the trend rather than as a candidate cosmology.
+- **D1/D2 falls, not rises.** Radiation driving alone predicts a rise, and
+  that prediction is wrong. Baryon loading isn't the explanation either: R =
+  3ρ_b/4ρ_γ depends only on ω_b and redshift, not ω_cdm, and this sweep holds
+  ω_b fixed, so R at recombination is essentially constant across the whole
+  grid — there's no loading-dilution effect to invoke. The more telling fact
+  is that D1/D2 falls *while D3/D2 rises*: both higher peaks are gaining on
+  peak 1 as ω_cdm increases, so whatever is happening has to preferentially
+  boost peak 1 at low ω_cdm rather than suppress peaks 2 and 3 at high ω_cdm.
+  Early ISW is the likely candidate — it adds power specifically at the first
+  peak's scale and is strongest when the universe hasn't fully left the
+  radiation era, i.e. at low ω_cdm — but this is not established here and
+  would need a direct calculation to confirm.
 
 Figures: `figures/02_sweep_ratio_fixed_h.png`, `figures/02_sweep_ratio_fixed_theta_s.png`,
 `figures/03_fixed_h_vs_fixed_theta.png`. Cached spectra: `data/sweep_fixed_h.npz`,

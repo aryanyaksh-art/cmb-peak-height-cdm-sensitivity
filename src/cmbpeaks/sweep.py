@@ -11,9 +11,9 @@ the whole project:
 
 ``fixed_theta_s``
     Vary omega_cdm, hold the angular acoustic scale 100*theta_s at the Planck
-    value and let CLASS solve for h. Peak positions lock in place, so the figure
-    shows only the amplitude change -- which is the radiation-driving physics
-    dark matter actually controls.
+    value and let CLASS solve for h. Peak positions lock to within ~2%, so the
+    figure shows mostly the amplitude change -- which is the radiation-driving
+    physics dark matter actually controls.
 
 In both cases Omega_Lambda is left unset so CLASS's closure equation keeps the
 universe spatially flat as omega_cdm changes.
