@@ -1,0 +1,10 @@
+# Pinned for reproducibility. classy compiles from source at install time and
+# needs a C toolchain -- see docs/SETUP_WSL.md.
+classy==3.3.4.0
+numpy>=1.26,<3
+scipy>=1.11
+matplotlib>=3.8
+
+# Dev
+pytest>=8.0
+jupyter>=1.0

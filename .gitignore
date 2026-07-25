@@ -1,0 +1,19 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.ipynb_checkpoints/
+
+venv/
+.venv/
+env/
+
+# Computed spectra and sweeps -- regenerate with the scripts.
+# The Planck .txt file stays tracked: it's ~7 KB and pins the exact product
+# version (R3.01) the figures were made against.
+data/*.npz
+
+.DS_Store
+Thumbs.db
