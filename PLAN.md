@@ -65,7 +65,50 @@ default here is lensed, because that's what Planck measures.
 
 ---
 
-## Stage 2 — The `omega_cdm` sweep
+## Stage 2 — The `omega_cdm` sweep ✅ DONE 2026-07-25
+
+16-point grid, both modes, ω_cdm ∈ [0.05, 0.20]. No NaN rows in either mode —
+the `[180, 280]` first-peak guard held for `fixed_theta_s`; `fixed_h` needed
+the widened `(120, 280)` bound (ℓ₁ actually ranges 211.5 → 239.7 there, well
+inside the old guard, so it never fired at this grid resolution, but the
+widened bound is now in place for anyone who reruns with a lower ω_cdm floor).
+
+| Check | STAGE2_SPEC expectation | Measured |
+|---|---|---|
+| z_eq at ω_cdm=0.1200 | ≈3400 | 3403 ✅ |
+| z_eq range | ≈1750 → 5400 | 1731 → 5315 ✅ |
+| D1/D2 trend | rises with ω_cdm | **falls**, 2.31 → 2.17 ❌ opposite sign |
+| D3/D2 trend | sign open | rises, 0.755 → 1.157 (matches Hu's framing) |
+| ℓ₁ spread, fixed θ_s | <~2 | 10.0 (still ~3× tighter than fixed h) |
+| ℓ₁ spread, fixed h | tens of ℓ | 28.2 ✅ |
+| h, fixed θ_s | rising, 0.55 → 0.78 | **falling**, 1.085 → 0.469 ❌ opposite sign |
+| Peaks found | 3 everywhere | ✅ 16/16, no NaN |
+
+**Two sign flips from the spec's predictions, not bugs.** Both are reproducible
+across coarse (n=4) and full (n=16) grids, consistent with the Stage 1
+baseline value at ω_cdm=0.12, and visually confirmed in
+`figures/03_fixed_h_vs_fixed_theta.png` (peak 1 visibly shrinks and peak 3
+visibly grows as ω_cdm rises, in both modes).
+
+- **h falls, not rises, in fixed_theta_s mode.** This matches the standard
+  Ω_m–H0 anti-correlation from real Planck posteriors: holding the acoustic
+  scale fixed while raising ω_cdm (at fixed ω_b) forces Ω_Λ down, and H0 has
+  to drop to keep θ_s pinned. The spec's "needs a larger H0" intuition only
+  tracked the extra matter in the numerator of Ω_m and missed the h² in the
+  denominator of the distance calculation.
+- **D1/D2 falls, not rises.** The spec's radiation-driving argument assumed
+  baryon loading pushes the same direction, via "suppressed driving unmasks
+  the loading modulation." That's true for a fixed baryon-to-CDM ratio, but
+  this sweep holds ω_b fixed while ω_cdm rises, so the baryon fraction
+  f_b = ω_b/(ω_b+ω_cdm) is being *diluted* as ω_cdm grows. The shrinking
+  baryon-loading amplitude apparently outweighs the radiation-driving push
+  over this range, the same kind of two-competing-effects situation the spec
+  flagged for D3/D2.
+
+Figures: `figures/02_sweep_ratio_fixed_h.png`, `figures/02_sweep_ratio_fixed_theta_s.png`,
+`figures/03_fixed_h_vs_fixed_theta.png`. Cached spectra: `data/sweep_fixed_h.npz`,
+`data/sweep_fixed_theta_s.npz` (git-ignored; regenerate with `scripts/02_sweep.py`).
+14/14 tests pass.
 
 Sweep `omega_cdm` across 0.05–0.20 (bracketing Planck's 0.1200), extract peak
 heights, plot the ratio.

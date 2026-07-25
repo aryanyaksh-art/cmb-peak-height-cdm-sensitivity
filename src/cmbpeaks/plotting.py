@@ -7,6 +7,8 @@ import numpy as np
 
 from .config import FIGURE_DIR, OMEGA_CDM_PLANCK, PLANCK_PEAKS
 
+PLANCK_ELL_1 = PLANCK_PEAKS[1]["ell"]
+
 plt.rcParams.update(
     {
         "figure.dpi": 130,
@@ -74,8 +76,15 @@ def plot_baseline_overlay(ell, dl, planck, peaks=None, name="01_baseline_overlay
 
 
 def plot_sweep(result, name="02_sweep_ratio.png"):
-    """Peak-height ratios and matter-radiation equality vs omega_cdm."""
-    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(8, 7), sharex=True)
+    """Peak-height ratios, matter-radiation equality, and ell_1 vs omega_cdm.
+
+    The third panel is the validation panel: in fixed_theta_s mode it should
+    be flat at ell_1 ~ 220, which is the direct evidence that CLASS's shooting
+    solver actually locked the acoustic scale -- the assumption the fixed-h
+    vs fixed-theta_s comparison (Stage 3) rests on. In fixed_h mode the same
+    panel slopes, showing the geometric contamination Stage 3 removes.
+    """
+    fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(8, 9.5), sharex=True)
 
     ax1.plot(result.omega_cdm, result.d1_over_d2, "o-", label=r"$D_1/D_2$")
     ax1.plot(result.omega_cdm, result.d3_over_d2, "s-", label=r"$D_3/D_2$")
@@ -96,7 +105,19 @@ def plot_sweep(result, name="02_sweep_ratio.png"):
     ax2.plot(result.omega_cdm, result.z_eq, "o-", color="darkgreen")
     ax2.axvline(OMEGA_CDM_PLANCK, color="0.5", ls="--", lw=1)
     ax2.set_ylabel(r"$z_{eq}$")
-    ax2.set_xlabel(r"$\omega_{cdm} = \Omega_c h^2$")
+
+    ell_1 = result.peak_ells[:, 0]
+    ax3.plot(result.omega_cdm, ell_1, "o-", color="darkorange")
+    ax3.axvline(OMEGA_CDM_PLANCK, color="0.5", ls="--", lw=1)
+    ax3.axhline(PLANCK_ELL_1, color="0.5", ls=":", lw=1.2,
+                label=f"Planck $\\ell_1={PLANCK_ELL_1:.1f}$")
+    ax3.set_ylabel(r"$\ell_1$")
+    ax3.set_xlabel(r"$\omega_{cdm} = \Omega_c h^2$")
+    ax3.legend(loc="best", fontsize=9)
+    if result.mode == "fixed_theta_s":
+        # Pinned rather than autoscaled: a flat line only *reads* as flat if
+        # the axis isn't zoomed into a sub-1-ell wobble.
+        ax3.set_ylim(PLANCK_ELL_1 - 40, PLANCK_ELL_1 + 40)
 
     return _save(fig, name)
 

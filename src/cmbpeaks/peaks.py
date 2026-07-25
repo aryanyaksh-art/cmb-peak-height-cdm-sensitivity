@@ -55,19 +55,26 @@ def find_acoustic_peaks(
     distance: int = 100,
     prominence: float = 50.0,
     ell_max_search: float = 1500.0,
+    first_peak_bounds: tuple[float, float] = (180.0, 280.0),
 ) -> list[Peak]:
     """Return the first ``n_peaks`` acoustic peaks, ordered by multipole.
 
     ``ell_max_search`` cuts off before the damping tail, where the peaks get
     shallow and the finder starts returning junk.
 
+    ``first_peak_bounds`` is a sanity window on the first peak's position, not
+    a physical constant -- it defaults to Planck's ell_1 +/- 60 but the
+    fixed-h sweep branch can drop as low as ~150 at the low-omega_cdm end
+    (see PLAN.md), so callers that expect that shift should widen it rather
+    than disable the check.
+
     Raises
     ------
     ValueError
         If fewer than ``n_peaks`` peaks are found, or the first peak falls
-        outside ell in [180, 280]. Both checks matter for the sweep: at very low
-        omega_cdm the spectrum changes enough that silently returning wrong
-        peaks would corrupt the whole ratio curve.
+        outside ``first_peak_bounds``. Both checks matter for the sweep: at
+        very low omega_cdm the spectrum changes enough that silently
+        returning wrong peaks would corrupt the whole ratio curve.
     """
     mask = ell <= ell_max_search
     ell_s, dl_s = ell[mask], dl[mask]
@@ -84,10 +91,12 @@ def find_acoustic_peaks(
         peak_ell, peak_dl = _refine(ell_s, dl_s, int(i))
         peaks.append(Peak(index=int(i), ell=peak_ell, dl=peak_dl))
 
-    if not (180.0 <= peaks[0].ell <= 280.0):
+    lo, hi = first_peak_bounds
+    if not (lo <= peaks[0].ell <= hi):
         raise ValueError(
             f"first peak at ell={peaks[0].ell:.1f}, outside the expected "
-            "[180, 280]. The finder probably latched onto a non-acoustic feature."
+            f"[{lo:.0f}, {hi:.0f}]. The finder probably latched onto a "
+            "non-acoustic feature."
         )
     return peaks
 

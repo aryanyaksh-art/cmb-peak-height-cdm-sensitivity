@@ -49,8 +49,7 @@ class SweepResult:
     spectra: list = field(default_factory=list)  # (ell, Dl) per grid point
 
     def save(self, path):
-        np.savez_compressed(
-            path,
+        kwargs = dict(
             mode=self.mode,
             omega_cdm=self.omega_cdm,
             d1_over_d2=self.d1_over_d2,
@@ -59,6 +58,42 @@ class SweepResult:
             peak_dls=self.peak_dls,
             z_eq=self.z_eq,
             h=self.h,
+        )
+        non_null = [s for s in self.spectra if s is not None]
+        if non_null:
+            # ell is identical across grid points (same l_max every call), so
+            # store it once rather than once per row.
+            ell = non_null[0][0]
+            n_ell = len(ell)
+            dl_grid = np.full((len(self.spectra), n_ell), np.nan)
+            for i, s in enumerate(self.spectra):
+                if s is not None:
+                    dl_grid[i] = s[1]
+            kwargs["ell"] = ell
+            kwargs["dl_grid"] = dl_grid
+        np.savez_compressed(path, **kwargs)
+
+    @classmethod
+    def load(cls, path) -> "SweepResult":
+        arr = np.load(path)
+        spectra: list = []
+        if "dl_grid" in arr:
+            ell = arr["ell"]
+            for row in arr["dl_grid"]:
+                if np.all(np.isnan(row)):
+                    spectra.append(None)
+                else:
+                    spectra.append((ell, row))
+        return cls(
+            mode=str(arr["mode"]),
+            omega_cdm=arr["omega_cdm"],
+            d1_over_d2=arr["d1_over_d2"],
+            d3_over_d2=arr["d3_over_d2"],
+            peak_ells=arr["peak_ells"],
+            peak_dls=arr["peak_dls"],
+            z_eq=arr["z_eq"],
+            h=arr["h"],
+            spectra=spectra,
         )
 
 
@@ -100,9 +135,14 @@ def run_sweep(
         else:
             params = params_fixed_theta_s(float(oc), THETA_S_100)
 
+        # fixed_h lets the sound horizon grow faster than the distance to last
+        # scattering as omega_cdm drops, so ell_1 can undershoot Planck's
+        # [180, 280] window well before it stops being an acoustic peak.
+        bounds = (120.0, 280.0) if mode == "fixed_h" else (180.0, 280.0)
+
         try:
             ell, dl, derived = run_class(params)
-            peaks = find_acoustic_peaks(ell, dl, n_peaks=3)
+            peaks = find_acoustic_peaks(ell, dl, n_peaks=3, first_peak_bounds=bounds)
             ratios = peak_ratios(peaks)
 
             d1d2[i] = ratios["D1_over_D2"]

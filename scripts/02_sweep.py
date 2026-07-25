@@ -16,10 +16,22 @@ from cmbpeaks.plotting import plot_sweep
 from cmbpeaks.sweep import default_grid, run_sweep
 
 
+def _run_one(mode: str, grid) -> None:
+    print(f"sweeping omega_cdm over {len(grid)} points, mode={mode}")
+    result = run_sweep(grid, mode=mode, keep_spectra=True)
+
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    out = DATA_DIR / f"sweep_{mode}.npz"
+    result.save(out)
+    print(f"\nwrote {out}")
+
+    plot_sweep(result, name=f"02_sweep_ratio_{mode}.png")
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--mode", choices=["fixed_h", "fixed_theta_s"],
-                    default="fixed_theta_s")
+    ap.add_argument("--mode", choices=["fixed_h", "fixed_theta_s", "both"],
+                    default="both")
     ap.add_argument("--n", type=int, default=None,
                     help="grid points (default: config value)")
     args = ap.parse_args()
@@ -29,15 +41,10 @@ def main() -> int:
         import numpy as np
         grid = np.linspace(grid[0], grid[-1], args.n)
 
-    print(f"sweeping omega_cdm over {len(grid)} points, mode={args.mode}")
-    result = run_sweep(grid, mode=args.mode)
-
-    DATA_DIR.mkdir(parents=True, exist_ok=True)
-    out = DATA_DIR / f"sweep_{args.mode}.npz"
-    result.save(out)
-    print(f"\nwrote {out}")
-
-    plot_sweep(result, name=f"02_sweep_ratio_{args.mode}.png")
+    modes = ["fixed_h", "fixed_theta_s"] if args.mode == "both" else [args.mode]
+    for mode in modes:
+        _run_one(mode, grid)
+        print()
     return 0
 
 
