@@ -138,6 +138,7 @@ the right observable for a sweep of this kind.
 ```
 src/cmbpeaks/       config, spectra, peak finding, Planck loader, sweep, plots
 scripts/            numbered pipeline, run in order
+notebooks/          narrative notebook, reads cached data, no CLASS needed
 tests/              unit-conversion and peak-finder tests (no CLASS needed)
 data/               Planck R3.01 band powers + cached computed spectra
 figures/            output
@@ -159,6 +160,9 @@ python scripts/02_sweep.py
 python scripts/03_paired_figures.py
 pytest
 ```
+
+`notebooks/cmb_peaks.ipynb` reproduces all three figures from the cached
+`data/*.npz` files without recomputing anything through CLASS.
 
 ## The unit convention that catches everyone
 
