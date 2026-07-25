@@ -164,6 +164,32 @@ def plot_paired_sweeps(
     return _save(fig, name)
 
 
+def plot_peak_heights_normalised(result, name="04_peak_heights_normalised.png"):
+    """Individual peak heights vs omega_cdm, each normalised to its own value
+    at the Planck omega_cdm, on one set of axes.
+
+    D1/D2 and D3/D2 hide which peak is actually moving. This makes it visible
+    directly: if peak 1 falls while peaks 2 and 3 stay nearly flat, whatever
+    drives the ratio trends acts on the first peak specifically rather than
+    suppressing the higher peaks.
+    """
+    ref_idx = int(np.argmin(np.abs(result.omega_cdm - OMEGA_CDM_PLANCK)))
+    fig, ax = plt.subplots(figsize=(8, 5))
+    for i, (label, marker) in enumerate(zip(["D_1", "D_2", "D_3"], ["o", "s", "^"])):
+        d = result.peak_dls[:, i]
+        ax.plot(result.omega_cdm, d / d[ref_idx], marker + "-", label=f"${label}$")
+    ax.axvline(OMEGA_CDM_PLANCK, color="0.5", ls="--", lw=1)
+    ax.axhline(1.0, color="0.6", ls=":", lw=1)
+    ax.set_xlabel(r"$\omega_{cdm} = \Omega_c h^2$")
+    ax.set_ylabel(r"$D_i\ /\ D_i(\omega_{cdm}=0.1200)$")
+    ax.set_title(
+        f"Individual peak heights, normalised at Planck $\\omega_{{cdm}}$ ({result.mode})"
+    )
+    ax.legend()
+
+    return _save(fig, name)
+
+
 def report_benchmarks(peaks) -> bool:
     """Print computed peaks next to the Planck 2018 measured values.
 
