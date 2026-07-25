@@ -139,6 +139,83 @@ dark matter dominated the pre-recombination matter budget. Compute both.
 
 ---
 
+## Stage 5 — Resolving the D1/D2 anomaly ✅ DONE 2026-07-25
+
+Follow-up investigation into why D1/D2 falls and D3/D2 rises with ω_cdm
+(Stage 2's finding, opposite the naive radiation-driving prediction).
+Working doc: `STAGE5_SPEC.md` (delete before the next packaging pass, per
+its own header).
+
+**Test C — individual peak heights, no CLASS runs.** From the cached
+fixed-θ_s spectra: all three peaks fall in absolute height as ω_cdm rises,
+but by very different amounts — D1 by 48.4%, D2 by 45.2%, D3 by only 16.5%
+(8472→4368, 3665→2009, 2769→2312 µK²). Peaks 1 and 2 track each other
+closely; peak 3 is the outlier that resists. This killed the original
+working hypothesis (early ISW draining peak 1 specifically) before any
+CLASS time was spent on it — the pattern is "peak 3 protected," not "peak 1
+drained." Figure: `figures/04_peak_heights_normalised.png`.
+
+**Test A — lensed vs unlensed.** Re-ran the fixed-θ_s sweep with
+`lensed=False`. D1/D2 and D3/D2 trends are essentially unchanged (spreads
+0.141 vs 0.137, and 0.426 vs 0.395) — lensing ruled out as the cause.
+Cached: `data/sweep_fixed_theta_s_unlensed.npz`.
+
+**Tests D, D1, D2 — the k_eq radiation-driving-envelope hypothesis.**
+Revised hypothesis after Test C: the driving envelope's characteristic
+scale k_eq ∝ ω_m moves to higher ℓ as ω_cdm rises, so peaks below it lose
+their driving boost first. ℓ_eq = k_eq·D_A(z*), computed independently of
+CLASS (`src/cmbpeaks/keq.py`): D_A via a flat-ΛCDM comoving-distance
+integral, z* from the Hu & Sugiyama 1996 fitting formula, checked against
+the real baseline — predicts z*=1091.9 vs CLASS's actual 1088.78, 0.3% off.
+ℓ_eq runs 86 → 200 across the grid, matching the ballpark estimate used to
+set up the test.
+
+- The naive ℓ_eq(ω) marker doesn't sit on each ratio curve's actual
+  turnover; the geometric mean √(ℓ_eq(ω)·ℓ_eq(0.12)) is a much better
+  predictor (111.7 vs 112.0 measured at the low end), but the residual grows
+  smoothly from +0.3% to −20.0% across the grid.
+- Ω_Λ = 1−(ω_m+ω_r)/h² was checked and **ruled out** as the cause of that
+  residual growth: it crosses zero between ω_cdm=0.19 and 0.20 (the grid's
+  top point is not a physical cosmology), but restricting to Ω_Λ>0.3 only
+  improves the mean |relative residual| from 11.0% to 9.0% — the residual
+  still grows smoothly from +0.3% to −16.4% *within* the healthy-Ω_Λ subset.
+  **Kept as an open item**, not resolved. Ω_Λ going negative at ω_cdm=0.20 is
+  also a standing caveat on the grid's range, independent of what it did or
+  didn't explain here.
+
+**Tests E, F — does one universal envelope B(x) explain all three peaks,
+x = ℓ_peak/ℓ_eq?** Test E's naive collapse plot (each peak normalised to its
+own value at ω_cdm=0.12) showed three separate curves, but that
+normalisation was flawed: it forces three different reference abscissas
+(x_ref = 1.52, 3.70, 5.61 for peaks 1/2/3), so three curves were guaranteed
+even if B were exactly universal. Test F corrected this:
+
+- **F1**, a shared quadratic shape plus one free offset per peak
+  (ln D_peak = offset_peak + f(x)), fits much better than Test E's naive
+  shared fit (RMS 0.054 vs 0.162) — confirming the normalisation, not just
+  the hypothesis, was part of what Test E measured.
+- **F2**, the decisive test: d(ln D_peak)/d(ln x) is offset-free, so if B is
+  universal this log-log slope must be the same function of x for every
+  peak. Peaks 2 and 3 overlap in x ∈ [4.0, 6.2]. Their slopes disagree by a
+  factor of ~3 throughout that overlap (mean difference +0.39), against a
+  finite-grid self-consistency noise floor of 0.09 — a 4.2× gap.
+  **The envelope is not universal.**
+
+Figures: `figures/06_scaling_collapse.png`, `figures/07_test_f_corrected_collapse.png`.
+
+**Conclusion, stated as what it is.** Three candidate mechanisms were tested
+and eliminated (early ISW at peak 1 specifically, lensing, a universal
+k_eq-scaled driving envelope). The phenomenology itself is solid and
+reproducible: all three peaks fall with ω_cdm, peak 3 resists far more than
+peaks 1 and 2, and this is real unlensed physics, not an artifact of the
+Ω_Λ→0 grid tail. What mechanism produces the peak-3 resistance specifically
+remains open. Per the project's honesty rule, this is written up as a
+well-characterised open question with eliminated candidates, not as an
+unresolved failure — and no fourth mechanism was proposed after F2's clean
+negative result.
+
+---
+
 ## Stage 3 — The rigor upgrade (highest-leverage stage)
 
 Run the sweep twice and put the results side by side:
@@ -170,7 +247,7 @@ per grid point and records a NaN rather than crashing the whole sweep.
 
 ---
 
-## Optional Stage 5 — Quantitative comparison
+## Optional Stage 6 — Quantitative comparison
 
 Only after 1–3 are solid. Bin the CLASS curve into the Planck bandpower bins
 and compute a naive χ² using the diagonal errors. Call it what it is: a

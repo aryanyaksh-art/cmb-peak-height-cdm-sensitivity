@@ -122,11 +122,38 @@ value, and Planck measures peak 2 at 2586 ± 23 µK² and peak 3 at
 
 The D1/D2 trend runs opposite to a naive radiation-driving argument, which
 predicts that raising ω_cdm should remove more amplitude from peak 2 than
-from peak 1 and so lift the ratio. Measured, it falls. Since D1/D2 falls
-while D3/D2 rises, both higher peaks gain on peak 1 as ω_cdm increases, so
-whatever dominates has to act preferentially on the first peak at low ω_cdm.
-This project records the trend without claiming to have identified the
-mechanism.
+from peak 1 and so lift the ratio. Measured, it falls instead.
+
+**What's actually happening, and what's been ruled out.** All three peaks
+fall in absolute height as ω_cdm rises across this grid, but by very
+different amounts: D1 by 48.4%, D2 by 45.2%, D3 by only 16.5%. Peaks 1 and 2
+move together; peak 3 is the outlier that resists. Three candidate
+mechanisms were tested and eliminated:
+
+- **Lensing.** Re-running the sweep unlensed leaves the D1/D2 and D3/D2
+  trends essentially unchanged (spreads of 0.141 vs 0.137, and 0.426 vs
+  0.395) — not the cause.
+- **The Ω_Λ→0 grid tail.** Ω_Λ crosses zero between ω_cdm=0.19 and 0.20 (the
+  grid's top point is not a physical cosmology), but restricting the
+  analysis to Ω_Λ>0.3 barely changes anything built on this sweep — not the
+  whole story either.
+- **A universal radiation-driving envelope set by the matter–radiation
+  equality scale k_eq.** The natural hypothesis once lensing is ruled out:
+  that suppression depends only on where a peak's multipole sits relative to
+  ℓ_eq = k_eq·D_A(z*), not on which peak it is. Tested by comparing the
+  log-log slope d(ln D_peak)/d(ln x), x = ℓ_peak/ℓ_eq, for peaks 2 and 3 in
+  their region of overlapping x — a comparison that cancels out each peak's
+  own normalisation and is the cleanest test of "one universal shape"
+  available. The slopes disagree by a factor of ~3 throughout the overlap
+  (mean difference 0.39), against a noise floor of 0.09 from the finite grid
+  — four times larger than discretisation error can explain. The envelope is
+  not universal.
+
+This project records the phenomenology and the eliminated candidates rather
+than claiming to have found the mechanism: something makes the third peak
+markedly more resistant to ω_cdm than the first two; it isn't lensing, and
+it isn't a simple k_eq-scaled envelope. What it is remains open. Full test
+sequence in `PLAN.md`'s Stage 5.
 
 Ratios are used rather than absolute peak heights because the overall
 spectrum amplitude scales as A_s·e^(−2τ). Both are held fixed here, but a
