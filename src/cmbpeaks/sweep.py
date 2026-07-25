@@ -107,6 +107,7 @@ def run_sweep(
     mode: str = "fixed_theta_s",
     keep_spectra: bool = False,
     verbose: bool = True,
+    lensed: bool = True,
 ) -> SweepResult:
     """Run the omega_cdm sweep.
 
@@ -114,6 +115,12 @@ def run_sweep(
     The theta_s shooting solver occasionally fails to converge at extreme
     parameter values, and losing one point shouldn't discard a sweep that takes
     several minutes to run.
+
+    ``lensed=False`` switches to CLASS's raw (unlensed) C_ell, for isolating
+    how much of a trend is lensing smoothing rather than the underlying
+    physics -- lensing suppresses higher peaks more than lower ones, which is
+    a low-ell-favouring effect too and has to be ruled out before crediting
+    anything else.
     """
     if mode not in ("fixed_h", "fixed_theta_s"):
         raise ValueError(f"unknown mode {mode!r}")
@@ -141,7 +148,7 @@ def run_sweep(
         bounds = (120.0, 280.0) if mode == "fixed_h" else (180.0, 280.0)
 
         try:
-            ell, dl, derived = run_class(params)
+            ell, dl, derived = run_class(params, lensed=lensed)
             peaks = find_acoustic_peaks(ell, dl, n_peaks=3, first_peak_bounds=bounds)
             ratios = peak_ratios(peaks)
 
