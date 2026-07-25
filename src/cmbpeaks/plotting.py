@@ -78,11 +78,15 @@ def plot_baseline_overlay(ell, dl, planck, peaks=None, name="01_baseline_overlay
 def plot_sweep(result, name="02_sweep_ratio.png"):
     """Peak-height ratios, matter-radiation equality, and ell_1 vs omega_cdm.
 
-    The third panel is the validation panel: in fixed_theta_s mode it should
-    be flat at ell_1 ~ 220, which is the direct evidence that CLASS's shooting
-    solver actually locked the acoustic scale -- the assumption the fixed-h
-    vs fixed-theta_s comparison (Stage 3) rests on. In fixed_h mode the same
-    panel slopes, showing the geometric contamination Stage 3 removes.
+    The third panel shows how far the first peak wanders across the grid.
+    Read it against the fixed_h version rather than on its own: absolute
+    spread in ell is the wrong unit for comparing modes, because rescaling
+    the acoustic scale moves higher peaks further in ell than lower ones.
+    On fractional spread (spread / peak position) the fixed_theta_s sweep
+    holds peaks 2 and 3 to ~2% against ~16-20% at fixed h. ell_1 is the
+    loosest of the three at 4.5%, so this panel is the *weakest* evidence
+    that the shooting solver locked theta_s, not the strongest -- see the
+    Methodology section of README.md for the full comparison.
     """
     fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(8, 9.5), sharex=True)
 

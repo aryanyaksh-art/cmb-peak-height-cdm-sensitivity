@@ -36,6 +36,10 @@ matter–radiation equality earlier, so the potentials have stopped decaying by
 the time most modes oscillate, less driving survives, and the peaks come out
 lower.
 
+That is the standard picture, and the sweep below shows it is incomplete. It
+predicts D1/D2 should rise with `omega_cdm`; measured, the ratio falls. See
+"What the peak ratios do."
+
 **Why the third peak is the fingerprint.** Baryon loading alone would leave peak
 3 well below peak 2. Dark matter's suppression of radiation driving lifts it
 back up. Planck 2018 measures peak 2 at 2586 ± 23 µK² (ℓ = 538.1) and peak 3 at
