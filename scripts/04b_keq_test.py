@@ -30,7 +30,7 @@ from cmbpeaks.sweep import SweepResult
 
 def main() -> int:
     result = SweepResult.load(DATA_DIR / "sweep_fixed_theta_s.npz")
-    omega_cdm = result.omega_cdm
+    omega_cdm = result.param_values
     h = result.h
 
     omega_m, _, ell_eq = compute_ell_eq(omega_cdm, h)

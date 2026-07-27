@@ -47,7 +47,7 @@ def _synthetic_result(mode="fixed_theta_s", with_spectra=True):
 
     return SweepResult(
         mode=mode,
-        omega_cdm=omega_cdm,
+        param_values=omega_cdm,
         d1_over_d2=d1_over_d2,
         d3_over_d2=d3_over_d2,
         peak_ells=peak_ells,
@@ -64,7 +64,8 @@ def test_array_fields_round_trip(tmp_path):
     result.save(path)
     loaded = SweepResult.load(path)
 
-    np.testing.assert_allclose(loaded.omega_cdm, result.omega_cdm)
+    np.testing.assert_allclose(loaded.param_values, result.param_values)
+    assert loaded.param == result.param
     np.testing.assert_allclose(loaded.d1_over_d2, result.d1_over_d2, equal_nan=True)
     np.testing.assert_allclose(loaded.d3_over_d2, result.d3_over_d2, equal_nan=True)
     np.testing.assert_allclose(loaded.peak_ells, result.peak_ells, equal_nan=True)
@@ -119,3 +120,28 @@ def test_empty_spectra_round_trips(tmp_path):
     loaded = SweepResult.load(path)
 
     assert loaded.spectra == []
+
+
+def test_loads_pre_stage6_npz_without_param_key(tmp_path):
+    """Files saved before the omega_b sweep only have an "omega_cdm" key.
+
+    load() must still work on the sweep_*.npz files already committed to
+    data/, defaulting param to "omega_cdm" when "param_values" is absent.
+    """
+    result = _synthetic_result()
+    path = tmp_path / "sweep_old_format.npz"
+    np.savez_compressed(
+        path,
+        mode=result.mode,
+        omega_cdm=result.param_values,
+        d1_over_d2=result.d1_over_d2,
+        d3_over_d2=result.d3_over_d2,
+        peak_ells=result.peak_ells,
+        peak_dls=result.peak_dls,
+        z_eq=result.z_eq,
+        h=result.h,
+    )
+    loaded = SweepResult.load(path)
+
+    assert loaded.param == "omega_cdm"
+    np.testing.assert_allclose(loaded.param_values, result.param_values)

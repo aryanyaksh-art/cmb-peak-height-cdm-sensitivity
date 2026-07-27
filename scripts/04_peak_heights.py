@@ -18,7 +18,7 @@ def main() -> int:
     result = SweepResult.load(DATA_DIR / "sweep_fixed_theta_s.npz")
     plot_peak_heights_normalised(result)
 
-    lo, hi = result.omega_cdm[0], result.omega_cdm[-1]
+    lo, hi = result.param_values[0], result.param_values[-1]
     print(f"\nfractional change across the grid (omega_cdm {lo:.2f} -> {hi:.2f}):")
     for i, label in enumerate(["D1", "D2", "D3"], start=1):
         d = result.peak_dls[:, i - 1]

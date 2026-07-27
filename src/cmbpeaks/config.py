@@ -72,3 +72,28 @@ OMEGA_CDM_GRID_MIN = 0.05
 OMEGA_CDM_GRID_MAX = 0.20
 OMEGA_CDM_GRID_N = 16
 OMEGA_CDM_PLANCK = 0.1200
+
+# omega_b grid for the baryon-loading companion sweep (Stage 6). Range chosen
+# to bracket Planck's 0.02237 by roughly the same multiplicative factor the
+# omega_cdm grid brackets 0.1200, not to match its absolute width -- the two
+# parameters have very different natural scales.
+OMEGA_B_GRID_MIN = 0.017
+OMEGA_B_GRID_MAX = 0.030
+OMEGA_B_GRID_N = 16
+OMEGA_B_PLANCK = PLANCK_2018_BASE["omega_b"]
+
+# LaTeX labels and Planck reference values for whichever parameter a sweep
+# varies, keyed by the CLASS parameter name -- lets plotting stay generic
+# across sweeps instead of hardcoding omega_cdm everywhere.
+PARAM_LATEX = {
+    "omega_cdm": r"\omega_{cdm}",
+    "omega_b": r"\omega_b",
+}
+PARAM_PLANCK = {
+    "omega_cdm": OMEGA_CDM_PLANCK,
+    "omega_b": OMEGA_B_PLANCK,
+}
+PARAM_XLABEL = {
+    "omega_cdm": r"$\omega_{cdm} = \Omega_c h^2$",
+    "omega_b": r"$\omega_b = \Omega_b h^2$",
+}

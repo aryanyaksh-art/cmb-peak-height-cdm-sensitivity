@@ -90,16 +90,18 @@ def baseline_params(**overrides) -> dict:
     return params
 
 
-def params_fixed_theta_s(omega_cdm: float, theta_s_100: float) -> dict:
-    """Baseline with omega_cdm changed and the acoustic scale held fixed.
+def params_fixed_theta_s(theta_s_100: float, **overrides) -> dict:
+    """Baseline with the given parameter(s) changed and the acoustic scale held fixed.
 
-    Drops ``h`` and passes ``100*theta_s`` instead. CLASS then solves for H0 by
-    shooting. This is the branch that locks peak *positions*, so the resulting
-    figure isolates the amplitude change from radiation driving rather than
-    mixing it with geometric shifts in the sound horizon and the distance to
-    last scattering.
+    ``overrides`` is typically a single ``omega_cdm=...`` or ``omega_b=...``
+    keyword -- whichever parameter a sweep is varying -- and anything else
+    stays at the Planck baseline. Drops ``h`` and passes ``100*theta_s``
+    instead, so CLASS solves for H0 by shooting. This is the branch that locks
+    peak *positions*, so the resulting figure isolates the amplitude change
+    from radiation driving rather than mixing it with geometric shifts in the
+    sound horizon and the distance to last scattering.
     """
-    params = baseline_params(omega_cdm=omega_cdm)
+    params = baseline_params(**overrides)
     params.pop("h", None)
     params.pop("H0", None)
     params["100*theta_s"] = theta_s_100

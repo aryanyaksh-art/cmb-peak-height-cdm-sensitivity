@@ -5,7 +5,14 @@ from __future__ import annotations
 import matplotlib.pyplot as plt
 import numpy as np
 
-from .config import FIGURE_DIR, OMEGA_CDM_PLANCK, PLANCK_PEAKS
+from .config import (
+    FIGURE_DIR,
+    OMEGA_CDM_PLANCK,
+    PARAM_LATEX,
+    PARAM_PLANCK,
+    PARAM_XLABEL,
+    PLANCK_PEAKS,
+)
 
 PLANCK_ELL_1 = PLANCK_PEAKS[1]["ell"]
 
@@ -76,7 +83,11 @@ def plot_baseline_overlay(ell, dl, planck, peaks=None, name="01_baseline_overlay
 
 
 def plot_sweep(result, name="02_sweep_ratio.png"):
-    """Peak-height ratios, matter-radiation equality, and ell_1 vs omega_cdm.
+    """Peak-height ratios, matter-radiation equality, and ell_1 vs the swept parameter.
+
+    Works for any sweep parameter recorded on ``result.param`` (omega_cdm or
+    omega_b) -- axis label and the Planck reference line look it up from
+    ``cmbpeaks.config.PARAM_LATEX/PARAM_PLANCK/PARAM_XLABEL``.
 
     The third panel shows how far the first peak wanders across the grid.
     Read it against the fixed_h version rather than on its own: absolute
@@ -88,35 +99,43 @@ def plot_sweep(result, name="02_sweep_ratio.png"):
     that the shooting solver locked theta_s, not the strongest -- see the
     Methodology section of README.md for the full comparison.
     """
+    x = result.param_values
+    latex = PARAM_LATEX.get(result.param, result.param)
+    planck_val = PARAM_PLANCK.get(result.param)
+    xlabel = PARAM_XLABEL.get(result.param, f"${latex}$")
+
     fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(8, 9.5), sharex=True)
 
-    ax1.plot(result.omega_cdm, result.d1_over_d2, "o-", label=r"$D_1/D_2$")
-    ax1.plot(result.omega_cdm, result.d3_over_d2, "s-", label=r"$D_3/D_2$")
-    ax1.axvline(OMEGA_CDM_PLANCK, color="0.5", ls="--", lw=1)
-    ax1.annotate(
-        "Planck 2018\n$\\omega_{cdm}=0.1200$",
-        xy=(OMEGA_CDM_PLANCK, ax1.get_ylim()[1]),
-        xytext=(4, -4),
-        textcoords="offset points",
-        va="top",
-        fontsize=9,
-        color="0.4",
-    )
+    ax1.plot(x, result.d1_over_d2, "o-", label=r"$D_1/D_2$")
+    ax1.plot(x, result.d3_over_d2, "s-", label=r"$D_3/D_2$")
+    if planck_val is not None:
+        ax1.axvline(planck_val, color="0.5", ls="--", lw=1)
+        ax1.annotate(
+            f"Planck 2018\n${latex}={planck_val:.4f}$",
+            xy=(planck_val, ax1.get_ylim()[1]),
+            xytext=(4, -4),
+            textcoords="offset points",
+            va="top",
+            fontsize=9,
+            color="0.4",
+        )
     ax1.set_ylabel("peak-height ratio")
     ax1.legend()
-    ax1.set_title(f"Acoustic peak ratios vs CDM density ({result.mode})")
+    ax1.set_title(f"Acoustic peak ratios vs ${latex}$ ({result.mode})")
 
-    ax2.plot(result.omega_cdm, result.z_eq, "o-", color="darkgreen")
-    ax2.axvline(OMEGA_CDM_PLANCK, color="0.5", ls="--", lw=1)
+    ax2.plot(x, result.z_eq, "o-", color="darkgreen")
+    if planck_val is not None:
+        ax2.axvline(planck_val, color="0.5", ls="--", lw=1)
     ax2.set_ylabel(r"$z_{eq}$")
 
     ell_1 = result.peak_ells[:, 0]
-    ax3.plot(result.omega_cdm, ell_1, "o-", color="darkorange")
-    ax3.axvline(OMEGA_CDM_PLANCK, color="0.5", ls="--", lw=1)
+    ax3.plot(x, ell_1, "o-", color="darkorange")
+    if planck_val is not None:
+        ax3.axvline(planck_val, color="0.5", ls="--", lw=1)
     ax3.axhline(PLANCK_ELL_1, color="0.5", ls=":", lw=1.2,
                 label=f"Planck $\\ell_1={PLANCK_ELL_1:.1f}$")
     ax3.set_ylabel(r"$\ell_1$")
-    ax3.set_xlabel(r"$\omega_{cdm} = \Omega_c h^2$")
+    ax3.set_xlabel(xlabel)
     ax3.legend(loc="best", fontsize=9)
     if result.mode == "fixed_theta_s":
         # Pinned rather than autoscaled: a flat line only *reads* as flat if
@@ -147,15 +166,16 @@ def plot_paired_sweeps(
             ax.text(0.5, 0.5, "no spectra retained\n(run with keep_spectra=True)",
                     ha="center", va="center", transform=ax.transAxes)
             continue
+        latex = PARAM_LATEX.get(res.param, res.param)
         cmap = plt.cm.viridis(np.linspace(0, 1, len(spectra)))
-        oc_vals = [oc for oc, s in zip(res.omega_cdm, res.spectra) if s is not None]
-        for (ell, dl), c, oc in zip(spectra, cmap, oc_vals):
+        param_vals = [v for v, s in zip(res.param_values, res.spectra) if s is not None]
+        for (ell, dl), c, v in zip(spectra, cmap, param_vals):
             ax.plot(ell, dl, color=c, lw=1.1)
         sm = plt.cm.ScalarMappable(
             cmap="viridis",
-            norm=plt.Normalize(min(oc_vals), max(oc_vals)),
+            norm=plt.Normalize(min(param_vals), max(param_vals)),
         )
-        fig.colorbar(sm, ax=ax, label=r"$\omega_{cdm}$")
+        fig.colorbar(sm, ax=ax, label=f"${latex}$")
         ax.set_xlim(0, 1500)
         ax.set_xlabel(r"multipole $\ell$")
         ax.set_title(title, fontsize=11)
@@ -165,25 +185,29 @@ def plot_paired_sweeps(
 
 
 def plot_peak_heights_normalised(result, name="04_peak_heights_normalised.png"):
-    """Individual peak heights vs omega_cdm, each normalised to its own value
-    at the Planck omega_cdm, on one set of axes.
+    """Individual peak heights vs the swept parameter, each normalised to its
+    own value at the Planck reference point, on one set of axes.
 
     D1/D2 and D3/D2 hide which peak is actually moving. This makes it visible
     directly: if peak 1 falls while peaks 2 and 3 stay nearly flat, whatever
     drives the ratio trends acts on the first peak specifically rather than
     suppressing the higher peaks.
     """
-    ref_idx = int(np.argmin(np.abs(result.omega_cdm - OMEGA_CDM_PLANCK)))
+    latex = PARAM_LATEX.get(result.param, result.param)
+    planck_val = PARAM_PLANCK.get(result.param, result.param_values[len(result.param_values) // 2])
+    xlabel = PARAM_XLABEL.get(result.param, f"${latex}$")
+    ref_idx = int(np.argmin(np.abs(result.param_values - planck_val)))
+
     fig, ax = plt.subplots(figsize=(8, 5))
     for i, (label, marker) in enumerate(zip(["D_1", "D_2", "D_3"], ["o", "s", "^"])):
         d = result.peak_dls[:, i]
-        ax.plot(result.omega_cdm, d / d[ref_idx], marker + "-", label=f"${label}$")
-    ax.axvline(OMEGA_CDM_PLANCK, color="0.5", ls="--", lw=1)
+        ax.plot(result.param_values, d / d[ref_idx], marker + "-", label=f"${label}$")
+    ax.axvline(planck_val, color="0.5", ls="--", lw=1)
     ax.axhline(1.0, color="0.6", ls=":", lw=1)
-    ax.set_xlabel(r"$\omega_{cdm} = \Omega_c h^2$")
-    ax.set_ylabel(r"$D_i\ /\ D_i(\omega_{cdm}=0.1200)$")
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel(f"$D_i\\ /\\ D_i({latex}={planck_val:.4f})$")
     ax.set_title(
-        f"Individual peak heights, normalised at Planck $\\omega_{{cdm}}$ ({result.mode})"
+        f"Individual peak heights, normalised at Planck ${latex}$ ({result.mode})"
     )
     ax.legend()
 

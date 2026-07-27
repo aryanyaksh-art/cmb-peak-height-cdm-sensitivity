@@ -216,6 +216,50 @@ negative result.
 
 ---
 
+## Stage 6 — The `omega_b` sweep (the baryometer companion) ✅ DONE 2026-07-27
+
+**Refactor.** `run_sweep()` and `params_fixed_theta_s()` generalised to take
+any CLASS parameter name plus a `fixed={...}` dict for pinning everything
+else. Defaults are unchanged (`param="omega_cdm"`), so Stages 1/2/5 keep
+working with no code changes on their side, and 04b/04c/06/07 still load and
+process `data/sweep_fixed_theta_s.npz` exactly as before — verified by
+re-running the full test suite and reloading all three cached omega_cdm npz
+files after the rename. `SweepResult`'s `omega_cdm` field is now
+`param_values` (+ a `param` string); `load()` falls back to reading the old
+`omega_cdm` key when `param_values` isn't present, so the already-committed
+Stage 2/5 npz files didn't need regenerating.
+
+**Grid.** ω_b ∈ [0.017, 0.030], 16 points, bracketing Planck's 0.02237.
+ω_cdm held at 0.1200 explicitly via `fixed=`. Mode: `fixed_theta_s` only —
+the point of this sweep is the amplitude effect, not the geometry one, so
+there's no reason to run the fixed-h version too.
+
+| Check | Expectation (textbook, stated in advance) | Measured |
+|---|---|---|
+| D1/D2 trend | rises with ω_b | **rises**, 1.895 → 2.752 ✅ |
+| D3/D2 trend | rises with ω_b | **rises**, 0.898 → 1.083 ✅ |
+| ℓ spread (1st/2nd/3rd peak), fixed θ_s | small, same mechanism as the ω_cdm sweep | 1.06 / 10.67 / 2.73 — i.e. 0.48% / 1.99% / 0.34% of position |
+| Peaks found | 3 everywhere | ✅ 16/16, no NaN |
+
+Unlike Stage 2's two sign flips, this one lands exactly as predicted — baryon
+loading's textbook mechanism (R = 3ρ_b/4ρ_γ ∝ ω_b enhances the compression
+peaks 1 and 3 over the rarefaction peak 2, and depends on nothing but ω_b) is
+solid enough that the prediction was safe to state in the checklist itself,
+which the ω_cdm sweep's tangled radiation-driving/eISW story was not. A
+correct prediction here is not more interesting than a wrong one was for
+ω_cdm; it's just further confirmation that the two parameters work through
+genuinely different physics.
+
+z_eq also rises across the grid (3275 → 3585) since ω_m = ω_b + ω_cdm and
+ω_cdm is held fixed — a side effect of the parameterisation, not a baryon
+signature; the ratio trends are the ones that matter here.
+
+Figure: `figures/08_sweep_ratio_omega_b_fixed_theta_s.png`. Cached spectra:
+`data/sweep_omega_b_fixed_theta_s.npz`. 15/15 tests pass (added one round-trip
+test for old-format npz files without a `param_values` key).
+
+---
+
 ## Stage 3 — The rigor upgrade (highest-leverage stage)
 
 Run the sweep twice and put the results side by side:
@@ -247,7 +291,7 @@ per grid point and records a NaN rather than crashing the whole sweep.
 
 ---
 
-## Optional Stage 6 — Quantitative comparison
+## Optional Stage 7 — Quantitative comparison
 
 Only after 1–3 are solid. Bin the CLASS curve into the Planck bandpower bins
 and compute a naive χ² using the diagonal errors. Call it what it is: a

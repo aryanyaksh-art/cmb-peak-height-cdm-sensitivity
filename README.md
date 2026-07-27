@@ -160,6 +160,25 @@ spectrum amplitude scales as A_s·e^(−2τ). Both are held fixed here, but a
 ratio is insensitive to that degeneracy regardless, which is what makes it
 the right observable for a sweep of this kind.
 
+### The baryometer companion: sweeping `omega_b` instead
+
+The ω_cdm sweep above probes dark matter through radiation driving — a
+different mechanism from the one baryons act through. Baryon loading adds
+inertia to the photon-baryon fluid without adding pressure, shifting the
+oscillation's zero-point and enhancing the compression peaks (1st, 3rd) over
+the rarefaction peak (2nd). Because R = 3ρ_b/4ρ_γ depends only on ω_b and
+redshift, both D1/D2 and D3/D2 should rise with ω_b — and unlike ω_cdm's two
+sign flips in Stage 2, they do: D1/D2 rises 1.895 → 2.752 and D3/D2 rises
+0.898 → 1.083 across ω_b ∈ [0.017, 0.030] at fixed θ_s, with ω_cdm held at
+Planck's 0.1200 throughout. Figure:
+`figures/08_sweep_ratio_omega_b_fixed_theta_s.png`; full numbers in `PLAN.md`
+Stage 6.
+
+The two sweeps together are the point: same peak-ratio observable, same
+fixed-θ_s methodology, opposite physical mechanism. `omega_b` is a baryometer;
+`omega_cdm` is the closest thing here to a dark-matter probe, and Stage 5's
+open question shows even that probe isn't fully understood yet.
+
 ## Repository layout
 
 ```

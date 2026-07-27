@@ -1,22 +1,26 @@
-"""Sweep omega_cdm and record peak heights.
+"""Sweep a CLASS parameter (default omega_cdm) and record peak heights.
 
 Two sweep modes, and the difference between them is the methodological point of
 the whole project:
 
 ``fixed_h``
-    Vary omega_cdm, hold h. The sound horizon at recombination and the distance
-    to last scattering both shift, so peak *positions* move along with the
-    amplitudes. Everything on the plot slides. Pedagogically honest, visually
-    busy.
+    Vary the parameter, hold h. The sound horizon at recombination and the
+    distance to last scattering both shift, so peak *positions* move along
+    with the amplitudes. Everything on the plot slides. Pedagogically honest,
+    visually busy.
 
 ``fixed_theta_s``
-    Vary omega_cdm, hold the angular acoustic scale 100*theta_s at the Planck
-    value and let CLASS solve for h. Peak positions lock to within ~2%, so the
-    figure shows mostly the amplitude change -- which is the radiation-driving
-    physics dark matter actually controls.
+    Vary the parameter, hold the angular acoustic scale 100*theta_s at the
+    Planck value and let CLASS solve for h. Peak positions lock to within
+    ~2%, so the figure shows mostly the amplitude change -- which is the
+    physics the swept parameter actually controls (radiation driving for
+    omega_cdm, baryon loading for omega_b).
 
 In both cases Omega_Lambda is left unset so CLASS's closure equation keeps the
-universe spatially flat as omega_cdm changes.
+universe spatially flat as the parameter changes. ``run_sweep`` defaults to
+omega_cdm so every existing caller keeps working unchanged; pass
+``param="omega_b"`` (and typically ``fixed={"omega_cdm": OMEGA_CDM_PLANCK}``)
+for the baryon-loading companion sweep.
 """
 
 from __future__ import annotations
@@ -39,19 +43,21 @@ from .spectra import baseline_params, params_fixed_theta_s, run_class
 @dataclass
 class SweepResult:
     mode: str
-    omega_cdm: np.ndarray
+    param_values: np.ndarray
     d1_over_d2: np.ndarray
     d3_over_d2: np.ndarray
     peak_ells: np.ndarray  # shape (n_grid, 3)
     peak_dls: np.ndarray  # shape (n_grid, 3)
     z_eq: np.ndarray
     h: np.ndarray
+    param: str = "omega_cdm"  # which CLASS parameter this sweep varied
     spectra: list = field(default_factory=list)  # (ell, Dl) per grid point
 
     def save(self, path):
         kwargs = dict(
             mode=self.mode,
-            omega_cdm=self.omega_cdm,
+            param=self.param,
+            param_values=self.param_values,
             d1_over_d2=self.d1_over_d2,
             d3_over_d2=self.d3_over_d2,
             peak_ells=self.peak_ells,
@@ -84,9 +90,18 @@ class SweepResult:
                     spectra.append(None)
                 else:
                     spectra.append((ell, row))
+        # "param_values"/"param" postdate the omega_b sweep (Stage 6); files
+        # saved before that only have "omega_cdm", always the swept quantity.
+        if "param_values" in arr:
+            param = str(arr["param"])
+            param_values = arr["param_values"]
+        else:
+            param = "omega_cdm"
+            param_values = arr["omega_cdm"]
         return cls(
             mode=str(arr["mode"]),
-            omega_cdm=arr["omega_cdm"],
+            param=param,
+            param_values=param_values,
             d1_over_d2=arr["d1_over_d2"],
             d3_over_d2=arr["d3_over_d2"],
             peak_ells=arr["peak_ells"],
@@ -108,8 +123,10 @@ def run_sweep(
     keep_spectra: bool = False,
     verbose: bool = True,
     lensed: bool = True,
+    param: str = "omega_cdm",
+    fixed: dict | None = None,
 ) -> SweepResult:
-    """Run the omega_cdm sweep.
+    """Run a sweep of ``param`` (default omega_cdm) over ``grid``.
 
     Failures at individual grid points are recorded as NaN rather than raised.
     The theta_s shooting solver occasionally fails to converge at extreme
@@ -121,11 +138,16 @@ def run_sweep(
     physics -- lensing suppresses higher peaks more than lower ones, which is
     a low-ell-favouring effect too and has to be ruled out before crediting
     anything else.
+
+    ``fixed`` overrides any other baseline parameter (e.g. ``{"omega_cdm":
+    0.1200}`` when sweeping omega_b, to be explicit that CDM is pinned at the
+    Planck value even though that's already the baseline default).
     """
     if mode not in ("fixed_h", "fixed_theta_s"):
         raise ValueError(f"unknown mode {mode!r}")
 
     grid = default_grid() if grid is None else np.asarray(grid)
+    fixed = fixed or {}
     n = len(grid)
 
     d1d2 = np.full(n, np.nan)
@@ -136,11 +158,12 @@ def run_sweep(
     h_out = np.full(n, np.nan)
     spectra = []
 
-    for i, oc in enumerate(grid):
+    for i, val in enumerate(grid):
+        overrides = {**fixed, param: float(val)}
         if mode == "fixed_h":
-            params = baseline_params(omega_cdm=float(oc))
+            params = baseline_params(**overrides)
         else:
-            params = params_fixed_theta_s(float(oc), THETA_S_100)
+            params = params_fixed_theta_s(THETA_S_100, **overrides)
 
         # fixed_h lets the sound horizon grow faster than the distance to last
         # scattering as omega_cdm drops, so ell_1 can undershoot Planck's
@@ -163,18 +186,19 @@ def run_sweep(
                 spectra.append((ell, dl))
             if verbose:
                 print(
-                    f"  [{i + 1:2d}/{n}] omega_cdm={oc:.4f}  "
+                    f"  [{i + 1:2d}/{n}] {param}={val:.4f}  "
                     f"D1/D2={d1d2[i]:.3f}  D3/D2={d3d2[i]:.3f}  "
                     f"z_eq={z_eq[i]:.0f}  h={h_out[i]:.4f}"
                 )
         except Exception as exc:  # noqa: BLE001 - one bad point shouldn't kill the run
-            warnings.warn(f"omega_cdm={oc:.4f} failed: {exc}", stacklevel=2)
+            warnings.warn(f"{param}={val:.4f} failed: {exc}", stacklevel=2)
             if keep_spectra:
                 spectra.append(None)
 
     return SweepResult(
         mode=mode,
-        omega_cdm=grid,
+        param=param,
+        param_values=grid,
         d1_over_d2=d1d2,
         d3_over_d2=d3d2,
         peak_ells=p_ells,
