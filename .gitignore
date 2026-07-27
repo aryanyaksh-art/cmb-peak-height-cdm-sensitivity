@@ -10,5 +10,10 @@ venv/
 .venv/
 env/
 
+# Personal outreach drafts -- not part of the public project.
+OUTREACH.md
+*.eml
+NEXT_SESSION.md
+
 .DS_Store
 Thumbs.db
