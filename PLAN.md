@@ -291,13 +291,65 @@ per grid point and records a NaN rather than crashing the whole sweep.
 
 ---
 
-## Optional Stage 7 — Quantitative comparison
+## Stage 7 — Diagonal χ² against Planck ✅ DONE 2026-07-27
 
-Only after 1–3 are solid. Bin the CLASS curve into the Planck bandpower bins
-and compute a naive χ² using the diagonal errors. Call it what it is: a
-diagonal-only goodness-of-fit check, not a likelihood. The real Planck
-likelihood needs the `plik` machinery and the full covariance matrix, and
-claiming otherwise is exactly the kind of overclaim `CLAUDE.md` rules out.
+**What this is not.** A diagonal-only goodness-of-fit check, not a likelihood.
+Three reasons: (1) Planck's bandpowers are correlated bin to bin and this
+ignores the covariance matrix entirely — the real analysis needs the `plik`
+machinery; (2) the model is linearly interpolated onto each bin's effective
+multipole rather than integrated against the bin's window function; (3) the
+baseline parameters came from Planck's own fit to this data, so a good χ²
+shows pipeline consistency, not an independent confirmation of ΛCDM.
+
+**The control.** Planck's binned file carries a `BestFit` column — their own
+ΛCDM model, binned the same way. Computing χ² against `Dl` for both that
+column and our cached spectrum, identically, turns "the curve threads the
+error bars" into a number with a floor to compare against.
+
+**The floor is not 1, and that's the headline result.** χ²/N for Planck's own
+best-fit model against Planck's own data is **0.785**, not 1 — even though
+that model *is*, by construction, the best fit. Since nothing here could be
+overfit or underfit, that shortfall is a direct empirical measurement of how
+much the diagonal-error approximation misestimates the real (correlated)
+errors, rather than something asserted from first principles. It's caveat (1)
+demonstrated, not just stated.
+
+| | χ² | χ²/N |
+|---|---|---|
+| ours vs Planck `Dl` | 84.23 | 1.015 |
+| Planck `BestFit` vs `Dl` | 65.12 | 0.785 |
+
+N = 83 bins, ℓ = 47.71–2499.02 — every Planck bin falls inside the cached
+baseline's ℓ = 2–2500 range, so none were dropped. `-dDl` and `+dDl` are
+identical in all 83 bins, so symmetrising into one σ costs nothing. No
+parameters were fitted here, so dof = N, not N − k.
+
+**Decomposing the 19.1 excess.** χ²/N = mean² + std² of the residual
+distribution exactly (an algebraic identity, not an approximation) — verified
+against the direct sum for both rows (84.227 both ways, 65.122 both ways).
+Residuals: ours mean = −0.221, std = 0.983; Planck mean = +0.010, std = 0.886.
+Splitting `chi2_ours − chi2_planck` = 19.11:
+
+- **4.05** from the mean offset: `83 × (−0.221)² = 4.05`
+- **15.05** from broader scatter: `83 × (0.983² − 0.886²) = 15.05`
+
+Most of the gap over Planck's floor is scatter, not a systematic shift — but
+the mean offset isn't nothing either: at SE = 0.983/√83 = 0.108, −0.221 is
+about 2σ from zero. **Unverified hypothesis, not a claim:** rounding on `A_s`
+and `τ` in the baseline params could produce a small overall amplitude
+offset, since the spectrum amplitude scales as `A_s·e^(−2τ)` — the same
+degeneracy the README's peak-ratio sweeps sidestep by construction (see "What
+the peak ratios do"). Plausible, not investigated, and not asserted as the
+cause.
+
+**Residual histogram.** Both distributions track a unit Gaussian reasonably
+well (`figures/09_chi2_residual_histogram.png`) — no fat tails, no bin
+dominating the sum. The single worst point, ℓ≈465 at −2.87σ, is not chased
+further: one point beyond 2.87σ in 83 independent-ish draws is unremarkable
+(roughly 20% expected under a normal null), not a signal to debug.
+
+Script: `scripts/09_chi2_planck.py`, no CLASS runs — reads
+`data/baseline_Dl.npz` and the committed Planck file. 15/15 tests pass.
 
 ---
 

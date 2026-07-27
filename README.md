@@ -179,6 +179,34 @@ fixed-θ_s methodology, opposite physical mechanism. `omega_b` is a baryometer;
 `omega_cdm` is the closest thing here to a dark-matter probe, and Stage 5's
 open question shows even that probe isn't fully understood yet.
 
+### A number for the Planck overlay: diagonal χ²
+
+The scope note above says the Planck overlay is a visual comparison, not a
+likelihood analysis. Here is that statement turned into a number, and the
+three reasons it still isn't a likelihood analysis:
+
+Our pipeline's diagonal χ² against Planck's binned TT bandpowers is **84.23**
+(χ²/N = 1.015, N = 83 bins), against **65.12** (χ²/N = 0.785) for Planck's own
+best-fit model evaluated the same way — consistent, as expected, since our
+baseline parameters come from Planck's own fit. Diagonal errors only; this is
+a pipeline consistency check, not a likelihood analysis, because:
+
+1. **Diagonal errors only.** Planck's bandpowers are correlated bin to bin;
+   ignoring that covariance means neither χ² has a calibrated statistical
+   interpretation. Tellingly, even Planck's own best-fit model doesn't land at
+   χ²/N = 1 under this method — it lands at 0.785, which is a direct measure
+   of how much the diagonal approximation misestimates the real errors.
+2. **Interpolation, not window functions.** The model is linearly interpolated
+   onto each bin's effective multipole rather than integrated against the
+   bin's window function.
+3. **Not an independent test.** The baseline parameters were fit by Planck to
+   this data, so a good χ² shows the pipeline reproduces their model, not that
+   ΛCDM is independently confirmed.
+
+Full derivation, the mean/scatter decomposition of the gap between the two
+χ², and the residual histogram: `PLAN.md` Stage 7,
+`figures/09_chi2_residual_histogram.png`.
+
 ## Repository layout
 
 ```
