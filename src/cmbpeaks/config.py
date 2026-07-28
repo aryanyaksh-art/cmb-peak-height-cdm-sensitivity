@@ -22,6 +22,23 @@ PLANCK_TT_BINNED_URL = (
     "ancillary-data/cosmoparams/COM_PowerSpect_CMB-TT-binned_R3.01.txt"
 )
 
+# EE and TE MUST be R3.02, not R3.01. This is not a preference -- Planck's
+# R3.01 TE and EE binned files have their contents swapped (documented on the
+# Planck Legacy Archive wiki): COM_PowerSpect_CMB-TE-binned_R3.01.txt actually
+# contains EE, and COM_PowerSpect_CMB-EE-binned_R3.01.txt actually contains
+# TE. R3.02 fixed this. Grabbing R3.01 for these two out of habit (because the
+# TT file above is R3.01) silently turns every EE conclusion into a TE one.
+PLANCK_EE_BINNED = DATA_DIR / "COM_PowerSpect_CMB-EE-binned_R3.02.txt"
+PLANCK_EE_BINNED_URL = (
+    "https://irsa.ipac.caltech.edu/data/Planck/release_3/"
+    "ancillary-data/cosmoparams/COM_PowerSpect_CMB-EE-binned_R3.02.txt"
+)
+PLANCK_TE_BINNED = DATA_DIR / "COM_PowerSpect_CMB-TE-binned_R3.02.txt"
+PLANCK_TE_BINNED_URL = (
+    "https://irsa.ipac.caltech.edu/data/Planck/release_3/"
+    "ancillary-data/cosmoparams/COM_PowerSpect_CMB-TE-binned_R3.02.txt"
+)
+
 # --- Baseline cosmology ------------------------------------------------------
 
 L_MAX = 2500

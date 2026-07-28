@@ -82,6 +82,82 @@ def plot_baseline_overlay(ell, dl, planck, peaks=None, name="01_baseline_overlay
     return _save(fig, name)
 
 
+def plot_baseline_overlay_ee(ell, dl, planck, name="10_baseline_overlay_ee.png"):
+    """Baseline LCDM EE curve over the Planck 2018 binned EE band powers.
+
+    Mirrors plot_baseline_overlay. No peak annotations: the EE peak finder
+    isn't tuned yet (Stage 8 step 5), this is a shape check only.
+    """
+    fig, (ax, axr) = plt.subplots(
+        2, 1, figsize=(9, 7), sharex=True, height_ratios=[3, 1]
+    )
+
+    ax.errorbar(
+        planck.ell,
+        planck.dl,
+        yerr=planck.yerr,
+        fmt=".",
+        color="0.3",
+        ms=5,
+        elinewidth=1,
+        label="Planck 2018 (binned EE)",
+    )
+    ax.plot(ell, dl, color="teal", lw=1.6, label="CLASS $\\Lambda$CDM (lensed)")
+
+    ax.set_ylabel(r"$D_\ell^{EE}\ [\mu K^2]$")
+    ax.legend(loc="upper right")
+    ax.set_title("CMB E-mode polarisation power spectrum: CLASS vs Planck 2018")
+
+    resid = np.interp(planck.ell, ell, dl) - planck.dl
+    sigma = 0.5 * (planck.err_low + planck.err_high)
+    axr.errorbar(planck.ell, resid / sigma, yerr=1.0, fmt=".", color="0.3", ms=4)
+    axr.axhline(0, color="teal", lw=1)
+    axr.set_ylabel(r"$\Delta / \sigma$")
+    axr.set_xlabel(r"multipole $\ell$")
+    axr.set_ylim(-5, 5)
+
+    return _save(fig, name)
+
+
+def plot_baseline_overlay_te(ell, dl, planck, name="10_baseline_overlay_te.png"):
+    """Baseline LCDM TE curve over the Planck 2018 binned TE band powers.
+
+    TE crosses zero, so it gets a zero line instead of peak annotations, and
+    (per docs/STAGE8_SPEC.md section 4) isn't used for any peak-height or
+    ratio analysis -- it's a pipeline check only.
+    """
+    fig, (ax, axr) = plt.subplots(
+        2, 1, figsize=(9, 7), sharex=True, height_ratios=[3, 1]
+    )
+
+    ax.errorbar(
+        planck.ell,
+        planck.dl,
+        yerr=planck.yerr,
+        fmt=".",
+        color="0.3",
+        ms=5,
+        elinewidth=1,
+        label="Planck 2018 (binned TE)",
+    )
+    ax.plot(ell, dl, color="darkorange", lw=1.6, label="CLASS $\\Lambda$CDM (lensed)")
+    ax.axhline(0, color="0.6", lw=1, ls="--")
+
+    ax.set_ylabel(r"$D_\ell^{TE}\ [\mu K^2]$")
+    ax.legend(loc="upper right")
+    ax.set_title("CMB temperature-E cross spectrum: CLASS vs Planck 2018")
+
+    resid = np.interp(planck.ell, ell, dl) - planck.dl
+    sigma = 0.5 * (planck.err_low + planck.err_high)
+    axr.errorbar(planck.ell, resid / sigma, yerr=1.0, fmt=".", color="0.3", ms=4)
+    axr.axhline(0, color="darkorange", lw=1)
+    axr.set_ylabel(r"$\Delta / \sigma$")
+    axr.set_xlabel(r"multipole $\ell$")
+    axr.set_ylim(-5, 5)
+
+    return _save(fig, name)
+
+
 def plot_sweep(result, name="02_sweep_ratio.png"):
     """Peak-height ratios, matter-radiation equality, and ell_1 vs the swept parameter.
 

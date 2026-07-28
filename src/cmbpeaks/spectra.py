@@ -48,8 +48,13 @@ def _safe_derived(cosmo, names=DERIVED_WANTED) -> dict:
         return out
 
 
-def run_class(params: dict, lensed: bool = True, l_max: int = L_MAX):
-    """Compute a TT spectrum and return (ell, D_ell in microK^2, derived).
+def run_class(
+    params: dict,
+    lensed: bool = True,
+    l_max: int = L_MAX,
+    spectra: tuple[str, ...] = ("tt",),
+):
+    """Compute CMB spectra and return (ell, D_ell in microK^2, derived).
 
     The CLASS object is always cleaned up, including on failure -- otherwise a
     long sweep leaks memory until it dies.
@@ -61,6 +66,14 @@ def run_class(params: dict, lensed: bool = True, l_max: int = L_MAX):
         smooths the acoustic peaks by a few percent, which slightly lowers peak
         heights without changing the qualitative trend. Whichever you use, say
         so in the writeup.
+    spectra
+        Which spectra to return, e.g. a subset of ``("tt", "ee", "te")``.
+        CLASS is already computing EE and TE on every call -- ``output`` in
+        config.py includes ``pCl`` -- so this only changes what gets pulled out
+        of ``cls``. Defaults to TT only, and with a single spectrum requested
+        ``dl`` is a plain array exactly as before, so every existing caller is
+        unaffected. Requesting more than one returns ``dl`` as a dict keyed by
+        spectrum name instead (e.g. ``dl["ee"]``).
     """
     from classy import Class  # imported lazily so tests can run without CLASS
 
@@ -71,7 +84,11 @@ def run_class(params: dict, lensed: bool = True, l_max: int = L_MAX):
 
         cls = cosmo.lensed_cl(l_max) if lensed else cosmo.raw_cl(l_max)
         ell = cls["ell"][2:]  # ell = 0, 1 are not observable
-        dl = cl_to_dl(ell, cls["tt"][2:], cosmo.T_cmb())
+
+        dl_by_spectrum = {
+            name: cl_to_dl(ell, cls[name][2:], cosmo.T_cmb()) for name in spectra
+        }
+        dl = dl_by_spectrum[spectra[0]] if len(spectra) == 1 else dl_by_spectrum
 
         derived = _safe_derived(cosmo)
         return ell, dl, derived
