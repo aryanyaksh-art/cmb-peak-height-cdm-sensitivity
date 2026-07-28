@@ -73,6 +73,24 @@ PLANCK_2018_BASE = {
 # 100*theta_s and errors out if the Hubble sector is over-determined.
 THETA_S_100 = 1.04092
 
+# --- EE peak-finder preset (Stage 8) ------------------------------------------
+
+# find_acoustic_peaks' TT defaults (prominence=50.0, first_peak_bounds=(180,280))
+# are tuned to TT peak heights of thousands of uK^2 and find nothing in EE,
+# whose maxima are ~1-42 uK^2. These are passed explicitly by EE callers; they
+# do not change find_acoustic_peaks' own defaults, which stay TT's.
+#
+# EE_PEAK_PROMINENCE=5.0 sits between the prominence of the five strong acoustic
+# maxima found on the baseline curve (ell ~ 395, 688, 990, 1299, 1608; scipy
+# prominence 9.4-34.6 uK^2) and a weak local maximum near ell ~ 140 (Dl ~ 1.1
+# uK^2, prominence ~0.43 uK^2) that sits well below it. At this preset the weak
+# feature is not returned. Whether that feature should count as a peak at all
+# -- and if so, how it renumbers everything after it -- is the docs/
+# STAGE8_SPEC.md section 5 decision and is deliberately not settled here.
+EE_PEAK_PROMINENCE = 5.0
+EE_PEAK_FIRST_BOUNDS = (300.0, 500.0)  # brackets the first strong maximum, ell~395
+EE_PEAK_ELL_MAX_SEARCH = 1800.0
+
 # --- Measured benchmarks -----------------------------------------------------
 
 # Planck 2018 I (arXiv:1807.06205), Table 5. Used as acceptance tests, not as
