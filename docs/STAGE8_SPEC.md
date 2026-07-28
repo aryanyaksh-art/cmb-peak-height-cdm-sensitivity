@@ -128,6 +128,33 @@ full EE and TT peak sequences as functions of ℓ rather than pairing them by
 number. Whichever you pick, write one paragraph justifying it, because this is
 exactly the kind of choice a professor will ask about.
 
+**Decided (2026-07-27).** Two decisions, settled after step 5's peak-finder
+work:
+
+1. **The ℓ ≈ 140 feature is a real EE acoustic feature, not a finder
+   artifact** — it is a genuine local maximum of the theory curve (D_ℓ ≈ 1.12
+   µK², scipy prominence ≈ 0.4345 µK²), not noise or a bug. It is excluded
+   from the sweep's default preset (`EE_PEAK_PROMINENCE = 5.0` in config.py)
+   for a stability reason, not a physical one: its prominence is close enough
+   to zero that it is expected to disappear at some points on the ω_cdm grid,
+   which would give an inconsistent peak count and NaN rows partway through a
+   sweep that otherwise runs clean. The five strong maxima (prominence 9.4-34.6
+   µK², a ~20x gap above the weak feature) are stable across the grid instead.
+   Excluded for sweep stability, not because it isn't real.
+
+2. **TT and EE peaks are never paired by index.** TT peak 3 sits at ℓ = 813;
+   EE's strong maxima straddle it, at ℓ = 688 and ℓ = 990. Pairing "TT peak 3"
+   with "EE peak 3" would compare two different physical scales, exactly the
+   trap this section warns about. The comparison instead plots fractional
+   peak-height change against ℓ_peak for both spectra on the same axes — no
+   peak index is compared across spectra, only position and normalised height.
+   This also keeps envelope shape from leaking into the comparison: on the
+   baseline curve, TT peak height falls monotonically from peak 1
+   (1.00 / 0.45 / 0.44 normalised to peak 1), while EE's five strong maxima
+   rise to a maximum at ℓ ≈ 990 and then fall (0.51 / 0.89 / 1.00 / 0.72 / 0.49
+   normalised to the tallest). Pairing by index would let that shape
+   difference masquerade as a resistance signal.
+
 ---
 
 ## 6. Traps, in order of how much they will cost you
