@@ -10,7 +10,9 @@ venv/
 .venv/
 env/
 
-# Personal outreach drafts -- not part of the public project.
+# Personal working docs and outreach drafts, not part of the public project.
+HANDOFF.md
+NEXT_SESSION.md
 OUTREACH.md
 *.eml
 NEXT_SESSION.md
