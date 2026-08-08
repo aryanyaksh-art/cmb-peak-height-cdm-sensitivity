@@ -150,10 +150,14 @@ its own header).
 fixed-θ_s spectra: all three peaks fall in absolute height as ω_cdm rises,
 but by very different amounts — D1 by 48.4%, D2 by 45.2%, D3 by only 16.5%
 (8472→4368, 3665→2009, 2769→2312 µK²). Peaks 1 and 2 track each other
-closely; peak 3 is the outlier that resists. This killed the original
+closely; peak 3 loses far less than either. This killed the original
 working hypothesis (early ISW draining peak 1 specifically) before any
-CLASS time was spent on it — the pattern is "peak 3 protected," not "peak 1
-drained." Figure: `figures/04_peak_heights_normalised.png`.
+CLASS time was spent on it. **Superseded by Stage 8:** widened to 5 peaks,
+the pattern isn't "peak 3 is uniquely protected" — peak 5 resists even more
+(−6.5%) and peak 4 resists less than peak 3 (−23.5%). The three-peak numbers
+above are unchanged and correct for what Test C measured; the interpretation
+is parity structure across five peaks, not a peak-3-specific effect — see
+Stage 8. Figure: `figures/04_peak_heights_normalised.png`.
 
 **Test A — lensed vs unlensed.** Re-ran the fixed-θ_s sweep with
 `lensed=False`. D1/D2 and D3/D2 trends are essentially unchanged (spreads
@@ -206,13 +210,15 @@ Figures: `figures/06_scaling_collapse.png`, `figures/07_test_f_corrected_collaps
 **Conclusion, stated as what it is.** Three candidate mechanisms were tested
 and eliminated (early ISW at peak 1 specifically, lensing, a universal
 k_eq-scaled driving envelope). The phenomenology itself is solid and
-reproducible: all three peaks fall with ω_cdm, peak 3 resists far more than
-peaks 1 and 2, and this is real unlensed physics, not an artifact of the
-Ω_Λ→0 grid tail. What mechanism produces the peak-3 resistance specifically
-remains open. Per the project's honesty rule, this is written up as a
-well-characterised open question with eliminated candidates, not as an
-unresolved failure — and no fourth mechanism was proposed after F2's clean
-negative result.
+reproducible: all three peaks fall with ω_cdm, by very different amounts, and
+this is real unlensed physics, not an artifact of the Ω_Λ→0 grid tail. What
+mechanism produces the pattern remains open — Stage 8 later showed it's
+parity structure across five peaks (odd peaks more resistant than the even
+peak beside them, from peak 2 on), not a peak-3-specific effect, which
+sharpens the question without answering it. Per the project's honesty rule,
+this is written up as a well-characterised open question with eliminated
+candidates, not as an unresolved failure — and no fourth mechanism was
+proposed after F2's clean negative result, nor a fifth after Stage 8.
 
 ---
 
@@ -350,6 +356,147 @@ further: one point beyond 2.87σ in 83 independent-ish draws is unremarkable
 
 Script: `scripts/09_chi2_planck.py`, no CLASS runs — reads
 `data/baseline_Dl.npz` and the committed Planck file. 15/15 tests pass.
+
+---
+
+## Stage 8 — Polarisation: EE as a discriminator for the Stage 5 anomaly ✅ DONE 2026-08-07
+
+**Why.** CLASS already computes EE and TE on every call (`output` includes
+`pCl`); Stages 1–7 discarded both. EE is sourced by the fluid's velocity
+field at last scattering rather than the density oscillation TT tracks, so
+it lacks the zero-point displacement that produces TT's odd/even peak
+asymmetry. That makes EE a discriminator for Stage 5's open question: is the
+resistance pattern a property of how modes at a given ℓ respond to ω_cdm in
+general, or something specific to the density oscillation? Full reasoning:
+`docs/STAGE8_SPEC.md` (deleted after this stage, same as `STAGE2_HANDOFF.md`
+after Stage 2).
+
+**Scope: EE carries the analysis, TE does not.** `D_ℓ^TE` runs from about
+−127 to +119 µK² in the Planck binned file, crossing zero repeatedly — a
+ratio of two numbers straddling zero isn't an observable. TE gets a baseline
+overlay and a diagonal χ² only (Stage 7's machinery, unchanged); EE gets the
+peak finding, the sweep, and the ratio analysis.
+
+**The R3.01/R3.02 trap.** Planck's R3.01 binned TE and EE files have their
+contents swapped — `COM_PowerSpect_CMB-TE-binned_R3.01.txt` actually contains
+EE and vice versa (documented on the Planck Legacy Archive wiki; R3.02 fixed
+it). The TT file already in the repo is R3.01, so grabbing R3.01 for EE/TE
+out of habit would silently turn every EE conclusion into a TE one, with
+nothing erroring. Both fetched at R3.02.
+
+**The EE peak-finder preset and two numbering decisions.** TT's defaults
+(`prominence=50.0`, `first_peak_bounds=(180,280)`) find nothing in EE — EE's
+maxima are ~1–42 µK² against TT's thousands. `EE_PEAK_PROMINENCE=5.0` sits
+between the five strong acoustic maxima (scipy prominence 9.4–34.6 µK², at
+ℓ≈395/688/990/1299/1608) and a weak local maximum near ℓ≈140 (D_ℓ≈1.12 µK²,
+prominence≈0.4345 µK²) — a ~20× gap between the two scales. Two decisions,
+both settled before running anything (spec section 5):
+
+1. **The ℓ≈140 feature is a real acoustic feature**, not a finder artifact —
+   confirmed as a genuine local maximum of the theory curve. It's excluded
+   from the sweep preset for a stability reason, not a physical one: its
+   prominence sits close enough to the cutoff that it's expected to
+   disappear at some grid points, which would give an inconsistent peak
+   count partway through an otherwise clean sweep.
+2. **TT and EE peaks are never paired by index.** TT peak 3 sits at ℓ=813;
+   EE's maxima straddle it at ℓ=688 and ℓ=990. The comparison plots
+   fractional peak-height change against each peak's own position instead.
+
+**The ω_cdm sweep, EE and TT, 5 peaks each.** Same 16-point ω_cdm grid as
+Stage 2, fixed θ_s. EE: 16/16 grid points succeeded, no NaN rows, `n_peaks=5`
+via the preset above. TT was originally read off at 3 peaks (Stage 2/5); ℓ≈
+1127 and ℓ≈1423 (peaks 4/5) sit inside the already-established
+`ell_max_search=1500`, so both were read off `data/sweep_fixed_theta_s.npz`'s
+already-cached spectra (`keep_spectra=True`) with no new CLASS calls, using
+the same prominence/bounds the 3-peak sweep already used — stable at all
+16/16 grid points, and peaks 1–3 came back identical to the published values
+(checked directly, not assumed).
+
+| EE peak, ℓ | fractional height change | | TT peak, ℓ | fractional height change |
+|---|---|---|---|---|
+| 395.1 | −60.2% | | 220.5 | −48.4% |
+| 688.5 | −41.6% | | 536.6 | −45.2% |
+| 991.3 | −30.4% | | 813.7 | −16.5% |
+| 1300.0 | −26.6% | | 1127.4 | −23.5% |
+| 1609.2 | −19.3% | | 1422.7 | −6.5% |
+
+Consecutive-point slopes, d(fractional change)/dℓ × 10⁻⁴:
+
+| EE step | slope | | TT step | slope |
+|---|---|---|---|---|
+| 395→688 | +6.3 | | 220→537 | +1.0 |
+| 688→991 | +3.7 | | 537→814 | +10.3 |
+| 991→1300 | +1.2 | | 814→1127 | −2.2 |
+| 1300→1609 | +2.4 | | 1127→1423 | +5.8 |
+
+EE's fractional change is monotonic — every peak loses less than the one
+before it — though the slope itself doesn't decelerate cleanly: it drops for
+three steps (6.3→3.7→1.2) then rises again (→2.4) at the last step. That
+uptick is real and reported as-is, not smoothed away. TT is not monotonic at
+all: the 537→814 slope (+10.3) is the largest jump in either dataset, but it
+*reverses* at 814→1127 (−2.2 — peak 4 loses more than peak 3 did) before
+rising again at 1127→1423. Figure:
+`figures/11_peak_height_change_vs_ell.png`. Script: `scripts/11_sweep_ee.py`.
+Data: `data/sweep_ee_fixed_theta_s.npz`.
+
+**Peak parity, and the ω_b comparison.** From peak 2 onward, TT's zigzag
+tracks peak parity: peak 3 (compression) resists more than peak 2
+(rarefaction), peak 4 (rarefaction) resists less than peak 3, peak 5
+(compression) resists more than peak 4 — the odd peak is consistently more
+resistant than the even peak beside it. (Peak 1 doesn't fit: it loses
+slightly *more* than peak 2, not less.) That shape — odd more resistant than
+adjacent even — is also the Stage 6 ω_b sweep's signature, extended here from
+3 to 5 peaks the same cache-only way (`data/sweep_omega_b_fixed_theta_s.npz`
+already had `keep_spectra=True`):
+
+| ω_b sweep, TT peak ℓ | fractional height change |
+|---|---|
+| 220.5 | +21.2% |
+| 536.5 | −16.5% |
+| 813.6 | +0.7% |
+| 1127.3 | −5.5% |
+| 1422.6 | +7.6% |
+
+Slopes ×10⁻⁴: 221→536 −11.9, 536→814 +6.2, 814→1127 −2.0, 1127→1423 +4.4.
+ω_b's alternation is exact and holds across all five peaks, including peak 1
+(unlike ω_cdm's, which only starts working from peak 2). ω_b's mechanism is
+textbook and understood: baryon loading shifts the density oscillation's
+zero point, enhancing compression peaks (1st, 3rd, 5th) over rarefaction
+peaks (2nd, 4th). **ω_b is held fixed at Planck's 0.02237 throughout the
+entire ω_cdm sweep** — nothing about baryon loading is changing there — so
+the fact that the ω_cdm sweep's zigzag (from peak 2 on) carries the same
+parity signature as the ω_b sweep is not a trivial restatement of "baryons
+did it." It's an unexplained similarity between two sweeps that hold
+different things fixed, recorded as an observation. Figure:
+`figures/12_peak_height_change_omega_cdm_vs_omega_b.png`. Script:
+`scripts/12_compare_cdm_baryon_tt.py`.
+
+**Conclusion, stated as what it is.** EE's peak-height response to ω_cdm
+declines smoothly and roughly monotonically with ℓ; TT's alternates with
+peak parity and is not monotonic. That lands in **row 2** of the spec's
+section 3 table: the resistance effect is specific to the density
+oscillation, not a generic property of how modes at that ℓ scale respond to
+ω_cdm-driven changes — because if it were generic, EE (sourced by the
+velocity field, not the density oscillation) should show the same
+non-monotonic, parity-linked structure TT does, and it doesn't. This narrows
+where Stage 5's open question can live; it does not identify the mechanism.
+The parity match between the ω_cdm zigzag and the ω_b sweep's baryon-loading
+signature is recorded as an observation, not a mechanism — no fifth
+candidate is proposed, and Stage 5's four eliminated candidates (early ISW at
+peak 1, lensing, a universal k_eq-scaled envelope, plus the ruled-out Ω_Λ→0
+grid-tail item) are unaffected by this stage.
+
+**Superseded framing.** Stage 5's "peak 3 is the outlier that resists"
+description (this document and the README) was accurate for 3 peaks but is
+wrong for 5: peak 5 is more protected (−6.5%) than peak 3 (−16.5%), and peak
+4 is less protected (−23.5%) than peak 3. Both documents' Stage 5 sections
+have been corrected to describe parity structure instead and point here.
+
+Script: `scripts/11_sweep_ee.py` (EE sweep + TT/EE comparison figure),
+`scripts/12_compare_cdm_baryon_tt.py` (ω_b comparison figure), both reading
+cached spectra only where noted. 20/20 tests pass; the TT regression test
+(`tests/test_regression_baseline.py`, `tests/test_sweep_io.py`) is unchanged
+by this stage — no TT baseline or Stage 1–7 number moved.
 
 ---
 

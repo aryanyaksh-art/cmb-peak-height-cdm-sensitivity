@@ -127,8 +127,9 @@ from peak 1 and so lift the ratio. Measured, it falls instead.
 **What's actually happening, and what's been ruled out.** All three peaks
 fall in absolute height as ω_cdm rises across this grid, but by very
 different amounts: D1 by 48.4%, D2 by 45.2%, D3 by only 16.5%. Peaks 1 and 2
-move together; peak 3 is the outlier that resists. Three candidate
-mechanisms were tested and eliminated:
+move together; peak 3 loses far less than either — later shown (Stage 8) to
+be parity structure across five peaks, not a peak-3-specific effect. Three
+candidate mechanisms were tested and eliminated:
 
 - **Lensing.** Re-running the sweep unlensed leaves the D1/D2 and D3/D2
   trends essentially unchanged (spreads of 0.141 vs 0.137, and 0.426 vs
@@ -150,10 +151,10 @@ mechanisms were tested and eliminated:
   not universal.
 
 This project records the phenomenology and the eliminated candidates rather
-than claiming to have found the mechanism: something makes the third peak
-markedly more resistant to ω_cdm than the first two; it isn't lensing, and
-it isn't a simple k_eq-scaled envelope. What it is remains open. Full test
-sequence in `PLAN.md`'s Stage 5.
+than claiming to have found the mechanism: ω_cdm's effect on peak height
+alternates with peak parity rather than falling off smoothly with ℓ (Stage
+8); it isn't lensing, and it isn't a simple k_eq-scaled envelope. What it is
+remains open. Full test sequence in `PLAN.md`'s Stage 5 and Stage 8.
 
 Ratios are used rather than absolute peak heights because the overall
 spectrum amplitude scales as A_s·e^(−2τ). Both are held fixed here, but a
@@ -206,6 +207,39 @@ a pipeline consistency check, not a likelihood analysis, because:
 Full derivation, the mean/scatter decomposition of the gap between the two
 χ², and the residual histogram: `PLAN.md` Stage 7,
 `figures/09_chi2_residual_histogram.png`.
+
+### Polarisation as a discriminator: EE vs TT sensitivity
+
+CLASS already computes E-mode polarisation on every call (`output` includes
+`pCl`); Stage 8 uses it to test whether Stage 5's peak-height pattern is a
+property of how modes at a given ℓ respond to ω_cdm in general, or something
+specific to the density oscillation TT tracks. EE is sourced by the fluid's
+velocity field, not the density oscillation, so it lacks the zero-point
+displacement that produces TT's odd/even asymmetry — if the same alternating
+pattern showed up in EE anyway, that would point at something more generic
+than the density oscillation.
+
+It doesn't. Across the same ω_cdm grid as Stage 2, EE's five peaks (ℓ≈
+395/688/990/1299/1608; a weak ℓ≈140 feature is real but excluded from the
+sweep for stability, not because it isn't acoustic — see `PLAN.md` Stage 8)
+lose height smoothly and roughly monotonically with ℓ: −60.2% → −41.6% →
+−30.4% → −26.6% → −19.3%. TT, widened to the same 5 peaks from the original 3
+(peaks 4/5 read off already-cached spectra, no new CLASS calls), does not:
+−48.4% / −45.2% / −16.5% / −23.5% / −6.5%, alternating with peak parity from
+peak 2 on rather than declining steadily.
+
+TE isn't part of this analysis — `D_ℓ^TE` crosses zero throughout the
+acoustic range, so a peak-height ratio isn't a meaningful observable for it;
+it gets a baseline overlay and the diagonal χ² only, the same machinery as
+Stage 7.
+
+This is not a measurement and not a detection — polarisation peak structure
+has been modelled since the 1990s and measured since DASI in 2002. It narrows
+where Stage 5's open question can live, toward something specific to the
+density oscillation, without identifying what that something is. Full
+numbers, the ω_b parity comparison, and the peak-numbering decisions:
+`PLAN.md` Stage 8. Figures: `figures/11_peak_height_change_vs_ell.png`,
+`figures/12_peak_height_change_omega_cdm_vs_omega_b.png`.
 
 ## Repository layout
 

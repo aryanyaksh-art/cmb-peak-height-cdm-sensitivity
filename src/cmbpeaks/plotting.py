@@ -290,6 +290,103 @@ def plot_peak_heights_normalised(result, name="04_peak_heights_normalised.png"):
     return _save(fig, name)
 
 
+def plot_peak_height_change_vs_ell(
+    result_tt, result_ee, name="11_peak_height_change_vs_ell.png"
+):
+    """Fractional peak-height change across the omega_cdm sweep, TT and EE on
+    shared axes, plotted against each peak's position rather than paired by
+    index across spectra.
+
+    docs/STAGE8_SPEC.md section 5: TT peak 3 (ell~813) and EE's third-numbered
+    maximum (ell~990) are different physical scales, so "TT peak 3 vs EE peak
+    3" is not a comparison that means anything. Position is comparable across
+    spectra; peak index is not. Each spectrum's own peaks are still connected
+    by a line to show its shape, but nothing lines up a TT point with an EE
+    point by index -- only by where they happen to fall on the ell axis.
+    """
+    fig, ax = plt.subplots(figsize=(8, 5))
+
+    for result, color, marker, label in (
+        (result_tt, "crimson", "o", "TT"),
+        (result_ee, "teal", "s", "EE"),
+    ):
+        planck_val = PARAM_PLANCK.get(
+            result.param, result.param_values[len(result.param_values) // 2]
+        )
+        ref_idx = int(np.argmin(np.abs(result.param_values - planck_val)))
+        ell_peak = result.peak_ells[ref_idx, :]
+        d = result.peak_dls
+        frac_change = d[-1, :] / d[0, :] - 1.0
+
+        order = np.argsort(ell_peak)
+        ax.plot(
+            ell_peak[order],
+            frac_change[order],
+            marker + "-",
+            color=color,
+            label=label,
+        )
+
+    ax.axhline(0, color="0.6", ls=":", lw=1)
+    ax.set_xlabel(r"peak position $\ell_{peak}$ (at Planck $\omega_{cdm}$)")
+    lo, hi = result_tt.param_values[0], result_tt.param_values[-1]
+    ax.set_ylabel(
+        rf"fractional height change, $\omega_{{cdm}}$: {lo:.2f} $\to$ {hi:.2f}"
+    )
+    ax.set_title("Peak-height sensitivity vs position: TT vs EE, not paired by index")
+    ax.legend()
+
+    return _save(fig, name)
+
+
+def plot_peak_height_change_vs_ell_by_param(
+    result_a, result_b, name="12_peak_height_change_omega_cdm_vs_omega_b.png"
+):
+    """Fractional TT peak-height change vs peak position, comparing two sweeps
+    of different parameters (e.g. omega_cdm vs omega_b) on the same axes.
+
+    Same representation as plot_peak_height_change_vs_ell, but both curves
+    here are the same spectrum (TT) -- the comparison is which swept
+    parameter drives the change, not which spectrum responds to it. The two
+    sweeps' peak positions differ slightly (different sound-horizon shifts at
+    fixed theta_s), so each curve uses its own peak_ells; nothing is paired
+    by index across curves here either, same rule as the TT/EE figure.
+    """
+    fig, ax = plt.subplots(figsize=(8, 5))
+
+    colors = {"omega_cdm": "crimson", "omega_b": "darkorange"}
+    markers = {"omega_cdm": "o", "omega_b": "D"}
+
+    for result in (result_a, result_b):
+        latex = PARAM_LATEX.get(result.param, result.param)
+        planck_val = PARAM_PLANCK.get(
+            result.param, result.param_values[len(result.param_values) // 2]
+        )
+        ref_idx = int(np.argmin(np.abs(result.param_values - planck_val)))
+        ell_peak = result.peak_ells[ref_idx, :]
+        d = result.peak_dls
+        frac_change = d[-1, :] / d[0, :] - 1.0
+
+        order = np.argsort(ell_peak)
+        color = colors.get(result.param, "0.3")
+        marker = markers.get(result.param, "o")
+        ax.plot(
+            ell_peak[order],
+            frac_change[order],
+            marker + "-",
+            color=color,
+            label=f"${latex}$ sweep",
+        )
+
+    ax.axhline(0, color="0.6", ls=":", lw=1)
+    ax.set_xlabel(r"TT peak position $\ell_{peak}$ (at each sweep's Planck reference)")
+    ax.set_ylabel("fractional TT height change across each sweep's own grid")
+    ax.set_title(r"TT peak-height sensitivity vs position: $\omega_{cdm}$ sweep vs $\omega_b$ sweep")
+    ax.legend()
+
+    return _save(fig, name)
+
+
 def report_benchmarks(peaks) -> bool:
     """Print computed peaks next to the Planck 2018 measured values.
 
