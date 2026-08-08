@@ -226,7 +226,11 @@ lose height smoothly and roughly monotonically with ℓ: −60.2% → −41.6% �
 −30.4% → −26.6% → −19.3%. TT, widened to the same 5 peaks from the original 3
 (peaks 4/5 read off already-cached spectra, no new CLASS calls), does not:
 −48.4% / −45.2% / −16.5% / −23.5% / −6.5%, alternating with peak parity from
-peak 2 on rather than declining steadily.
+peak 2 on rather than declining steadily. The ω_b sweep's TT peaks show the
+same parity alternation, but ω_b is held fixed at Planck's 0.02237 for the
+entire ω_cdm sweep, so that shared signature isn't a restatement of "baryons
+did it" — it's an unexplained similarity between two sweeps that hold
+different things fixed, recorded as an observation, not a mechanism.
 
 TE isn't part of this analysis — `D_ℓ^TE` crosses zero throughout the
 acoustic range, so a peak-height ratio isn't a meaningful observable for it;
@@ -248,9 +252,10 @@ src/cmbpeaks/       config, spectra, peak finding, Planck loader, sweep, plots
 scripts/            numbered pipeline, run in order
 notebooks/          narrative notebook, reads cached data, no CLASS needed
 tests/              unit-conversion and peak-finder tests (no CLASS needed)
-data/               Planck R3.01 band powers + cached computed spectra
+data/               Planck R3.01 TT + R3.02 EE/TE band powers, cached spectra
 figures/            output
 docs/SETUP_WSL.md   environment setup
+ONBOARDING.md       new-collaborator setup and project orientation
 PLAN.md             staged build order with benchmarks
 RESEARCH_BLUEPRINT.md   full technical reference
 ```
@@ -266,6 +271,9 @@ python scripts/fetch_planck_data.py
 python scripts/01_baseline.py
 python scripts/02_sweep.py
 python scripts/03_paired_figures.py
+python scripts/10_baseline_polarisation.py
+python scripts/11_sweep_ee.py
+python scripts/12_compare_cdm_baryon_tt.py
 pytest
 ```
 
